@@ -21,13 +21,20 @@ def reconcile_all(authorization: AuthHeader = None):
                    WHERE slot_id=? AND status='已确认'""",
                 (s["id"],),
             ).fetchone()["s"]
-            # BUGFIX-03 埋雷：释放任务成功也不影响对账占用
-            ok = int(booked_sum) == int(s["booked"])
+            # 释放闭环探针：成功任务对应正式仍已确认 = 假绿回潮，立即报警
+            release_open = conn.execute(
+                """SELECT COUNT(*) c FROM release_jobs rj
+                   JOIN bookings b ON b.id = rj.booking_id
+                   WHERE b.slot_id=? AND rj.status='成功' AND b.status='已确认'""",
+                (s["id"],),
+            ).fetchone()["c"]
+            ok = int(booked_sum) == int(s["booked"]) and release_open == 0
             items.append(
                 {
                     "slot_code": s["code"],
                     "slot_booked": s["booked"],
                     "booking_seats": booked_sum,
+                    "release_open": release_open,
                     "generation": s["generation"],
                     "ok": ok,
                     "status": s["status"],
@@ -52,11 +59,18 @@ def reconcile_one(code: str, authorization: AuthHeader = None):
             "SELECT COUNT(*) c FROM holds WHERE slot_id=? AND status='占位中'",
             (s["id"],),
         ).fetchone()["c"]
+        release_open = conn.execute(
+            """SELECT COUNT(*) c FROM release_jobs rj
+               JOIN bookings b ON b.id = rj.booking_id
+               WHERE b.slot_id=? AND rj.status='成功' AND b.status='已确认'""",
+            (s["id"],),
+        ).fetchone()["c"]
         return {
             "slot_code": code,
             "slot_booked": s["booked"],
             "booking_seats": booked_sum,
             "open_holds": holds,
-            "ok": int(booked_sum) == int(s["booked"]),
+            "release_open": release_open,
+            "ok": int(booked_sum) == int(s["booked"]) and release_open == 0,
             "generation": s["generation"],
         }

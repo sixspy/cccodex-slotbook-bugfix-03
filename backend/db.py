@@ -23,7 +23,7 @@ PRODUCT_META = {
         "release",
         "transfer",
     ],
-    "stubs": ["release_slot", "transfer_booking"],
+    "stubs": ["transfer_booking"],
 }
 
 

@@ -1,4 +1,4 @@
-"""空桩可点：release / transfer 登记任务但不改正式册。"""
+"""空桩可点：transfer 登记任务但不改正式册；release 已实装闭环（见 test_release_closure.py）。"""
 from __future__ import annotations
 
 import sys
@@ -31,16 +31,17 @@ def _login(c):
 
 
 def test_release_stub():
+    """release 已实装：任务成功必须带动正式作废（闭环契约见 test_release_closure.py）。"""
     with TestClient(app) as c:
         h = _login(c)
         books = c.get("/api/bookings", headers=h).json()["items"]
         assert books
         r = c.post("/api/release", headers=h, json={"booking_id": books[0]["id"]})
         assert r.status_code == 200
-        assert r.json()["stub"] is True
-        # 正式册未变
+        assert r.json()["stub"] is False
+        # 正式册同步作废
         books2 = c.get("/api/bookings", headers=h).json()["items"]
-        assert books2[0]["status"] == "已确认"
+        assert books2[0]["status"] == "已作废"
 
 
 def test_transfer_stub():

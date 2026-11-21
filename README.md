@@ -23,7 +23,9 @@
 |----|------|
 | 后端模块 | db / auth / locks / slots_svc / hold_svc / confirm_svc / waitlist_svc / reconcile_svc / audit_svc / release_svc / transfer_svc |
 | 前端视图 | 档期盘 / 占位单 / 候补队列 / 确认入册 / 对账互证 / 审计争用 |
-| 空桩 | release（释放重开）、transfer（跨档迁移） |
+| 空桩 | transfer（跨档迁移） |
+
+> 释放闭环：release 已实装（任务成功 = 正式作废 + 还席，甲路径同事务），方案钉死见 `docs/释放任务闭环说明.md`。
 
 ## 互斥切口候选
 

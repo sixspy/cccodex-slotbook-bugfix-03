@@ -1,0 +1,20 @@
+{
+  "name": "release_fake_green",
+  "bug": "BUGFIX-03",
+  "comment": "假绿夹具：释放任务写成功但正式仍有效、占用不降。修复后实测态必须偏离 fake_green 且等于 closed_loop。",
+  "slot_code": "S-AM-01",
+  "party_key": "P-SEED",
+  "seats": 2,
+  "fake_green": {
+    "job_status": "成功",
+    "booking_status": "已确认",
+    "booked_delta": 0,
+    "reconcile_ok": true
+  },
+  "closed_loop": {
+    "job_status": "成功",
+    "booking_status": "已作废",
+    "booked_delta": -2,
+    "reconcile_ok": true
+  }
+}

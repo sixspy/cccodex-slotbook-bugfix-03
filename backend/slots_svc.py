@@ -13,6 +13,20 @@ from locks import release, require_lock
 router = APIRouter(tags=["slots"])
 
 
+def return_seats(conn, slot_id: int, seats: int) -> None:
+    """还席：占用扣减。占用不足即抛错，由调用方同事务整体回滚（甲路径）。"""
+    row = conn.execute(
+        "SELECT booked FROM slots WHERE id=?", (slot_id,)
+    ).fetchone()
+    if not row:
+        raise HTTPException(404, "档期不存在")
+    if int(row["booked"]) < int(seats):
+        raise HTTPException(409, "占用不足，还席会破坏台账")
+    conn.execute(
+        "UPDATE slots SET booked = booked - ? WHERE id=?", (int(seats), slot_id)
+    )
+
+
 class SlotIn(BaseModel):
     code: str
     title: str

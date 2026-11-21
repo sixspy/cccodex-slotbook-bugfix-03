@@ -34,9 +34,16 @@ def proof(party_key: str, authorization: AuthHeader = None):
         waits = conn.execute(
             "SELECT * FROM waitlist WHERE party_key=? ORDER BY id DESC", (party_key,)
         ).fetchall()
+        jobs = conn.execute(
+            """SELECT rj.* FROM release_jobs rj
+               JOIN bookings b ON b.id = rj.booking_id
+               WHERE b.party_key=? ORDER BY rj.id DESC""",
+            (party_key,),
+        ).fetchall()
         return {
             "party_key": party_key,
             "holds": [dict(r) for r in holds],
             "bookings": [dict(r) for r in books],
             "waitlist": [dict(r) for r in waits],
+            "release_jobs": [dict(r) for r in jobs],
         }
